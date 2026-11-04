@@ -1,0 +1,1028 @@
+{
+  "datasets": [
+    {
+      "name": "region_sla",
+      "displayName": "Regional SLA Summary",
+      "config": {
+        "source": "capstone6_telecom.gold.gold_region_sla_summary",
+        "measures": [
+          {
+            "name": "regions",
+            "expr": "COUNT(1)"
+          },
+          {
+            "name": "measurement_count",
+            "expr": "SUM(measurement_count)"
+          },
+          {
+            "name": "avg_availability_pct",
+            "expr": "SUM(avg_availability_pct * measurement_count) / SUM(CASE WHEN avg_availability_pct IS NOT NULL THEN measurement_count END)",
+            "displayName": "Avg availability (%)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "min_availability_pct",
+            "expr": "MIN(min_availability_pct)",
+            "displayName": "Min availability (%)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "avg_latency_ms",
+            "expr": "SUM(avg_latency_ms * measurement_count) / SUM(CASE WHEN avg_latency_ms IS NOT NULL THEN measurement_count END)",
+            "displayName": "Avg latency (ms)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "displayName": "P95 latency (ms)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            },
+            "name": "p95_latency_ms",
+            "expr": "MAX(p95_latency_ms)",
+            "comment": "Per-region p95; when several regions are grouped this shows the highest regional p95"
+          },
+          {
+            "name": "avg_packet_loss_pct",
+            "expr": "SUM(avg_packet_loss_pct * measurement_count) / SUM(CASE WHEN avg_packet_loss_pct IS NOT NULL THEN measurement_count END)",
+            "displayName": "Avg packet loss (%)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "avg_throughput_mbps",
+            "expr": "SUM(avg_throughput_mbps * measurement_count) / SUM(CASE WHEN avg_throughput_mbps IS NOT NULL THEN measurement_count END)",
+            "displayName": "Avg throughput (Mbps)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "outage_count",
+            "expr": "SUM(outage_count)"
+          },
+          {
+            "name": "total_outage_minutes",
+            "expr": "SUM(total_outage_minutes)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "max",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "outages_with_telemetry",
+            "expr": "SUM(outages_with_telemetry)"
+          },
+          {
+            "name": "outages_with_complaints",
+            "expr": "SUM(outages_with_complaints)"
+          },
+          {
+            "name": "complaint_count",
+            "expr": "SUM(complaint_count)"
+          }
+        ],
+        "version": "1.1",
+        "comment": "Network SLA summary per region (one row per region). SLA targets are not defined, so no pass/fail is computed.",
+        "dimensions": [
+          {
+            "expr": "region_id"
+          },
+          {
+            "expr": "region_name"
+          },
+          {
+            "expr": "sla_tier"
+          },
+          {
+            "expr": "service_zone"
+          },
+          {
+            "expr": "market_segment"
+          }
+        ]
+      }
+    },
+    {
+      "name": "outage_impact",
+      "displayName": "Outage Impact",
+      "config": {
+        "source": "capstone6_telecom.gold.fact_outage_impact",
+        "measures": [
+          {
+            "name": "outages",
+            "expr": "COUNT(1)"
+          },
+          {
+            "name": "outages_with_telemetry",
+            "expr": "SUM(CASE WHEN has_telemetry_evidence THEN 1 ELSE 0 END)"
+          },
+          {
+            "name": "outages_with_complaints",
+            "expr": "SUM(CASE WHEN has_customer_impact THEN 1 ELSE 0 END)"
+          },
+          {
+            "name": "share_with_telemetry",
+            "expr": "MEASURE(outages_with_telemetry) / MEASURE(outages)",
+            "displayName": "Share with telemetry evidence",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "share_with_customer_impact",
+            "expr": "MEASURE(outages_with_complaints) / MEASURE(outages)",
+            "displayName": "Share with customer impact",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "displayName": "Avg latency delta (ms)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            },
+            "name": "avg_latency_delta_ms",
+            "expr": "AVG(latency_delta_ms)",
+            "comment": "Average of window minus baseline latency, over outages with telemetry evidence"
+          },
+          {
+            "name": "avg_availability_delta_pct",
+            "expr": "AVG(availability_delta_pct)",
+            "displayName": "Avg availability delta (pct points)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 3.0
+              }
+            }
+          },
+          {
+            "name": "avg_packet_loss_delta_pct",
+            "expr": "AVG(packet_loss_delta_pct)",
+            "displayName": "Avg packet loss delta (pct points)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 3.0
+              }
+            }
+          },
+          {
+            "name": "avg_throughput_delta_mbps",
+            "expr": "AVG(throughput_delta_mbps)",
+            "displayName": "Avg throughput delta (Mbps)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "window_complaints",
+            "expr": "SUM(window_complaint_count)"
+          },
+          {
+            "name": "avg_outage_duration_minutes",
+            "expr": "AVG(outage_duration_minutes)",
+            "displayName": "Avg outage duration (min)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          }
+        ],
+        "version": "1.1",
+        "comment": "Outage-to-telemetry correlation (one row per outage). Deltas are impact window minus baseline for the same tower.",
+        "dimensions": [
+          {
+            "expr": "outage_id"
+          },
+          {
+            "expr": "outage_type"
+          },
+          {
+            "expr": "severity"
+          },
+          {
+            "expr": "root_cause_code"
+          },
+          {
+            "expr": "region_name"
+          },
+          {
+            "expr": "sla_tier"
+          },
+          {
+            "expr": "outage_date"
+          },
+          {
+            "expr": "has_telemetry_evidence"
+          },
+          {
+            "expr": "has_customer_impact"
+          }
+        ]
+      }
+    },
+    {
+      "name": "network_quality_daily",
+      "displayName": "Network Quality Daily",
+      "config": {
+        "source": "capstone6_telecom.gold.gold_network_quality_daily",
+        "measures": [
+          {
+            "name": "measurement_count",
+            "expr": "SUM(measurement_count)"
+          },
+          {
+            "name": "outlier_measurement_count",
+            "expr": "SUM(outlier_measurement_count)"
+          },
+          {
+            "displayName": "Avg latency (ms, excl. outliers)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            },
+            "name": "avg_latency_ms",
+            "expr": "SUM(avg_latency_ms * (measurement_count - COALESCE(outlier_measurement_count, 0))) / SUM(CASE WHEN avg_latency_ms IS NOT NULL THEN measurement_count - COALESCE(outlier_measurement_count, 0) END)",
+            "comment": "Measurement-weighted average latency excluding IQR outlier measurements"
+          },
+          {
+            "name": "avg_latency_ms_incl_outliers",
+            "expr": "SUM(avg_latency_ms_incl_outliers * measurement_count) / SUM(CASE WHEN avg_latency_ms_incl_outliers IS NOT NULL THEN measurement_count END)",
+            "displayName": "Avg latency (ms, incl. outliers)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "displayName": "Avg availability (%)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            },
+            "name": "avg_availability_pct",
+            "expr": "SUM(avg_availability_pct * measurement_count) / SUM(CASE WHEN avg_availability_pct IS NOT NULL THEN measurement_count END)",
+            "comment": "Measurement-weighted average availability, in percent (0-100)"
+          },
+          {
+            "displayName": "Avg packet loss (%)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            },
+            "name": "avg_packet_loss_pct",
+            "expr": "SUM(avg_packet_loss_pct * measurement_count) / SUM(CASE WHEN avg_packet_loss_pct IS NOT NULL THEN measurement_count END)",
+            "comment": "Measurement-weighted average packet loss, in percent (0-100)"
+          },
+          {
+            "name": "avg_throughput_mbps",
+            "expr": "SUM(avg_throughput_mbps * measurement_count) / SUM(CASE WHEN avg_throughput_mbps IS NOT NULL THEN measurement_count END)",
+            "displayName": "Avg throughput (Mbps)",
+            "format": {
+              "type": "number",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 2.0
+              }
+            }
+          },
+          {
+            "name": "outage_count",
+            "expr": "SUM(outage_count)"
+          },
+          {
+            "name": "complaint_count",
+            "expr": "SUM(complaint_count)"
+          }
+        ],
+        "version": "1.1",
+        "comment": "Daily network quality per region (one row per region_id + summary_date). Averages are re-weighted by measurement counts so they stay correct when rolled up.",
+        "dimensions": [
+          {
+            "expr": "summary_date"
+          },
+          {
+            "expr": "region_id"
+          },
+          {
+            "expr": "region_name"
+          },
+          {
+            "expr": "service_zone"
+          },
+          {
+            "expr": "sla_tier"
+          }
+        ]
+      }
+    },
+    {
+      "name": "pipeline_validation",
+      "displayName": "Pipeline Validation",
+      "config": {
+        "source": "SELECT layer, check_group, check_name, table_name, comparison, expected_value, actual_value, blocking, status, validated_at\nFROM capstone6_telecom.bronze.bronze_validation_summary\nUNION ALL\nSELECT layer, check_group, check_name, table_name, comparison, expected_value, actual_value, blocking, status, validated_at\nFROM capstone6_telecom.silver.silver_validation_summary\nUNION ALL\nSELECT layer, check_group, check_name, table_name, comparison, expected_value, actual_value, blocking, status, validated_at\nFROM capstone6_telecom.gold.gold_validation_summary",
+        "measures": [
+          {
+            "name": "checks",
+            "expr": "COUNT(1)"
+          },
+          {
+            "name": "passed_checks",
+            "expr": "SUM(CASE WHEN status = 'PASS' THEN 1 ELSE 0 END)"
+          },
+          {
+            "name": "failed_checks",
+            "expr": "SUM(CASE WHEN status = 'FAIL' THEN 1 ELSE 0 END)"
+          },
+          {
+            "name": "warning_checks",
+            "expr": "SUM(CASE WHEN status = 'WARN' THEN 1 ELSE 0 END)"
+          },
+          {
+            "name": "pass_rate",
+            "expr": "MEASURE(passed_checks) / MEASURE(checks)",
+            "format": {
+              "type": "percentage",
+              "decimalPlaces": {
+                "type": "exact",
+                "places": 1.0
+              }
+            }
+          },
+          {
+            "name": "last_validated_at",
+            "expr": "MAX(validated_at)",
+            "format": {
+              "type": "date_time",
+              "dateFormat": "year_month_day",
+              "timeFormat": "locale_hour_minute"
+            }
+          }
+        ],
+        "version": "1.1",
+        "comment": "Pipeline validation results written by tests/06_Pipeline_Validation (latest run only).",
+        "dimensions": [
+          {
+            "expr": "layer"
+          },
+          {
+            "expr": "check_group"
+          },
+          {
+            "expr": "check_name"
+          },
+          {
+            "expr": "table_name"
+          },
+          {
+            "expr": "comparison"
+          },
+          {
+            "expr": "expected_value"
+          },
+          {
+            "expr": "actual_value"
+          },
+          {
+            "expr": "blocking"
+          },
+          {
+            "expr": "status"
+          },
+          {
+            "expr": "validated_at"
+          }
+        ]
+      }
+    }
+  ],
+  "pages": [
+    {
+      "name": "63fa2dbd",
+      "displayName": "Page 1",
+      "layout": [
+        {
+          "widget": {
+            "name": "header",
+            "spec": {
+              "widgetType": "text",
+              "version": 1,
+              "encodings": {
+                "text": {
+                  "lines": [
+                    "# Telecom Network Quality\n",
+                    "Gold layer, `capstone6_telecom`. Latency excludes IQR outliers. The date and SLA tier filters apply to the cards and the latency trend."
+                  ],
+                  "fields": []
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "f_date",
+            "queries": [
+              {
+                "name": "dashboards/01f1d87168981d3c80685051e3b4e935/datasets/01f1d871b2981067b53ad980ba1ee215_summary_date",
+                "query": {
+                  "datasetName": "network_quality_daily",
+                  "fields": [
+                    {
+                      "name": "summary_date",
+                      "expression": "`summary_date`"
+                    },
+                    {
+                      "name": "summary_date_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "Date"
+              },
+              "widgetType": "filter-date-range-picker",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "summary_date",
+                    "queryName": "dashboards/01f1d87168981d3c80685051e3b4e935/datasets/01f1d871b2981067b53ad980ba1ee215_summary_date"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "f_tier",
+            "queries": [
+              {
+                "name": "dashboards/01f1d87168981d3c80685051e3b4e935/datasets/01f1d871b2981067b53ad980ba1ee215_sla_tier",
+                "query": {
+                  "datasetName": "network_quality_daily",
+                  "fields": [
+                    {
+                      "name": "sla_tier",
+                      "expression": "`sla_tier`"
+                    },
+                    {
+                      "name": "sla_tier_associativity",
+                      "expression": "COUNT_IF(`associative_filter_predicate_group`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "frame": {
+                "showTitle": true,
+                "title": "SLA tier"
+              },
+              "widgetType": "filter-multi-select",
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "sla_tier",
+                    "queryName": "dashboards/01f1d87168981d3c80685051e3b4e935/datasets/01f1d871b2981067b53ad980ba1ee215_sla_tier"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 2,
+            "width": 6,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "k_avail",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "network_quality_daily",
+                  "fields": [
+                    {
+                      "name": "measure(avg_availability_pct)",
+                      "expression": "MEASURE(`avg_availability_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg availability (%)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_availability_pct)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 4,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "k_lat",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "network_quality_daily",
+                  "fields": [
+                    {
+                      "name": "measure(avg_latency_ms)",
+                      "expression": "MEASURE(`avg_latency_ms`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg latency (ms, excl. outliers)"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(avg_latency_ms)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 4,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "k_out",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "network_quality_daily",
+                  "fields": [
+                    {
+                      "name": "measure(outage_count)",
+                      "expression": "MEASURE(`outage_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Outages"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(outage_count)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 4,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "k_cmp",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "network_quality_daily",
+                  "fields": [
+                    {
+                      "name": "measure(complaint_count)",
+                      "expression": "MEASURE(`complaint_count`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Complaints"
+              },
+              "version": 2,
+              "widgetType": "counter",
+              "encodings": {
+                "value": {
+                  "fieldName": "measure(complaint_count)",
+                  "rowNumber": 0
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 4,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "t_lat",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "network_quality_daily",
+                  "fields": [
+                    {
+                      "name": "daily(summary_date)",
+                      "expression": "DATE_TRUNC(\"DAY\", `summary_date`)"
+                    },
+                    {
+                      "name": "measure(avg_latency_ms)",
+                      "expression": "MEASURE(`avg_latency_ms`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Daily avg latency (ms, excl. outliers)"
+              },
+              "version": 3,
+              "widgetType": "line",
+              "encodings": {
+                "x": {
+                  "fieldName": "daily(summary_date)",
+                  "displayName": "Day",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(avg_latency_ms)",
+                  "displayName": "avg_latency_ms",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 7,
+            "width": 8,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "o_type",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "outage_impact",
+                  "fields": [
+                    {
+                      "name": "severity",
+                      "expression": "`severity`"
+                    },
+                    {
+                      "name": "outage_type",
+                      "expression": "`outage_type`"
+                    },
+                    {
+                      "name": "measure(outages)",
+                      "expression": "MEASURE(`outages`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Outages by type and severity"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "outage_type",
+                  "displayName": "outage_type",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(outages)",
+                  "displayName": "outages",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "severity",
+                  "displayName": "severity",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 13,
+            "width": 6,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "s_tier",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "region_sla",
+                  "fields": [
+                    {
+                      "name": "sla_tier",
+                      "expression": "`sla_tier`"
+                    },
+                    {
+                      "name": "measure(avg_availability_pct)",
+                      "expression": "MEASURE(`avg_availability_pct`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Avg availability (%) by SLA tier"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "sla_tier",
+                  "displayName": "sla_tier",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(avg_availability_pct)",
+                  "displayName": "avg_availability_pct",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "sla_tier",
+                  "displayName": "sla_tier",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 7,
+            "width": 4,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "val",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "pipeline_validation",
+                  "fields": [
+                    {
+                      "name": "status",
+                      "expression": "`status`"
+                    },
+                    {
+                      "name": "layer",
+                      "expression": "`layer`"
+                    },
+                    {
+                      "name": "measure(checks)",
+                      "expression": "MEASURE(`checks`)"
+                    }
+                  ],
+                  "disaggregated": false
+                }
+              }
+            ],
+            "spec": {
+              "frame": {
+                "showTitle": true,
+                "title": "Pipeline validation checks by layer"
+              },
+              "version": 3,
+              "widgetType": "bar",
+              "encodings": {
+                "x": {
+                  "fieldName": "layer",
+                  "displayName": "layer",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "fieldName": "measure(checks)",
+                  "displayName": "checks",
+                  "scale": {
+                    "type": "quantitative"
+                  }
+                },
+                "color": {
+                  "fieldName": "status",
+                  "displayName": "status",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 13,
+            "width": 6,
+            "height": 6
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
